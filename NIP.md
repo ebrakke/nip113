@@ -107,9 +107,8 @@ Activity data often contains sensitive location information. Clients SHOULD:
 ### Extension Points
 Rather than trying to standardize every possible activity metric or analysis, this NIP focuses on the core event structure. More specialized analysis and visualization can be built through:
 
-1. Data Vending Machines (NIPs 90+) that analyze activity files and produce specialized metrics
-2. Client-specific tags for additional metadata
-3. Future NIPs for standardizing advanced features like segments, routes, and challenges
+1. Data Vending Machines (NIPs 90) that analyze activity files and produce specialized metrics
+2. Future edits to this NIP to add more activity types or metrics
 
 ### Example - Public Activity
 ```json
