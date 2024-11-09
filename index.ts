@@ -23,9 +23,9 @@ const runningActivity: Activity = {
     elevation_gain: 100, // meters
     elevation_loss: 50  // meters
   },
+  activityFileUrl: "https://example.com/run-data.gpx",
   images: [
     "https://example.com/run-selfie.jpg",
-    "https://example.com/run-data.gpx"
   ]
 }
 
@@ -51,6 +51,7 @@ const cyclingActivity: Activity = {
     elevation_gain: 245, // meters
     elevation_loss: 245  // meters
   },
+  activityFileUrl: "https://example.com/bike-data.gpx",
   images: [
     "https://example.com/bike-sunset.jpg"
   ]

@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts"
+    "dev": "bun run example/server.ts"
   },
   "dependencies": {
     "blurhash": "^2.0.5",

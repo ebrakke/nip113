@@ -1,9 +1,7 @@
-import { Event } from "nostr-tools";
+import type { Event, EventTemplate } from "nostr-tools";
 import {
   Activity,
-  ActivityEvent,
   PrivateActivityContent,
-  EventTemplate,
   ActivityType,
 } from "./types";
 import { encrypt, decrypt } from "nostr-tools/nip44";
@@ -94,12 +92,12 @@ export function parseActivityEvent(
 
   const activity: Activity = {
     id: event.tags.find((t) => t[0] === "d")?.[1]!,
-    title: event.kind === 30100 ? content.title : content.sensitive_tags.title,
+    title: event.kind === 30100 ? event.tags.find((t) => t[0] === "title")?.[1] : content.sensitive_tags.title,
     type: event.tags.find((t) => t[0] === "t")?.[1] as ActivityType,
     recordedAt: parseInt(
       event.tags.find((t) => t[0] === "recorded_at")?.[1] || "0"
     ),
-    metrics: content.metrics,
+    metrics: event.kind === 30100 ? JSON.parse(event.content) : content.metrics,
   };
 
   // Handle images

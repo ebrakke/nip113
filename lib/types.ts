@@ -37,5 +37,3 @@ export type PrivateActivityContent = {
 export type ActivityEvent = Event & {
   kind: 30100 | 30102
 }
-
-export { EventTemplate } from 'nostr-tools'
