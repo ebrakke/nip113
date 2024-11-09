@@ -79,6 +79,7 @@ const server = serve({
               <div class="activity-card">
                   <div class="activity-title">${activity.title}</div>
                   <div class="activity-type">${activity.type}</div>
+                  <div class="activity-description">${activity.description}</div>
                   <div class="metrics">
                       <div class="metric">
                           <div class="metric-label">Distance</div>

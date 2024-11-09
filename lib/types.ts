@@ -15,6 +15,7 @@ export type ActivityOptions = {
   id: string
   title: string
   type: ActivityType
+  description?: string
   recordedAt: number
   activityFileUrl?: string
   images?: string[]
@@ -29,6 +30,7 @@ export type PrivateActivityContent = {
   metrics: ActivityMetrics
   sensitive_tags: {
     title: string
+    description?: string
     r?: string
     images?: string[]
   }

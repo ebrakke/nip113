@@ -20,6 +20,10 @@ export function createPublicActivityEvent(activity: Activity): EventTemplate {
     tags.push(["r", activity.activityFileUrl]);
   }
 
+  if (activity.description) {
+    tags.push(["description", activity.description]);
+  }
+
   if (activity.images?.length) {
     activity.images.forEach((img) => {
       const imgTag = ["image", img];
@@ -53,6 +57,10 @@ export function createPrivateActivityEvent(
 
   if (activity.activityFileUrl) {
     privateContent.sensitive_tags.r = activity.activityFileUrl;
+  }
+
+  if (activity.description) {
+    privateContent.sensitive_tags.description = activity.description;
   }
 
   // Encrypt the content using NIP-44
@@ -94,6 +102,7 @@ export function parseActivityEvent(
     id: event.tags.find((t) => t[0] === "d")?.[1]!,
     title: event.kind === 30100 ? event.tags.find((t) => t[0] === "title")?.[1] : content.sensitive_tags.title,
     type: event.tags.find((t) => t[0] === "t")?.[1] as ActivityType,
+    description: event.kind === 30100 ? event.tags.find((t) => t[0] === "description")?.[1] : content.sensitive_tags.description,
     recordedAt: parseInt(
       event.tags.find((t) => t[0] === "recorded_at")?.[1] || "0"
     ),

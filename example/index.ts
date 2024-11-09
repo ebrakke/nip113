@@ -9,6 +9,7 @@ export const sampleActivities: Activity[] = [
     title: "Morning Run in Central Park",
     type: "run",
     recordedAt: Date.now(),
+    description: "A nice morning run in Central Park",
     metrics: {
       distance: 5200,
       duration: 1800,
@@ -28,6 +29,7 @@ export const sampleActivities: Activity[] = [
     title: "Afternoon Bike Ride in Prospect Park",
     type: "ride",
     recordedAt: Date.now(),
+    description: "A nice afternoon bike ride in Prospect Park",
     metrics: {
       distance: 15000,
       duration: 3600,

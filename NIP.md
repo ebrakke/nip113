@@ -31,6 +31,7 @@ The `content` field MUST contain a stringified JSON object with basic metrics:
     ["t", "<activity-type>"],
     ["title", "<activity title>"],
     ["recorded_at", "<unix timestamp when activity occurred>"],
+    ["description", "<activity description>"], // Optional
     ["r", "<URL to activity file>"], // Optional
     ["image", "<URL>"], // Optional, image URL
     ["image", "<URL>"], // Optional, image URL
@@ -54,7 +55,8 @@ An encrypted version of the activity event, using NIP-44 encryption. The `conten
   "sensitive_tags": {
     "title": "<activity title>",
     "r": "<URL to activity file>",
-    "images": ["<URL>", "<URL>"]
+    "images": ["<URL>", "<URL>"],
+    "description": "<activity description>" // Optional
   }
 }
 ```
@@ -120,6 +122,7 @@ Rather than trying to standardize every possible activity metric or analysis, th
     ["t", "run"], 
     ["title", "Morning Park Run"],
     ["recorded_at", "1705312800"],
+    ["description", "A nice morning run in Central Park"],
     ["r", "https://example.com/activities/run1234.gpx"],
     ["image", "https://storage.example.com/activity1234/photo1.jpg"],
     ["image", "https://storage.example.com/activity1234/photo2.jpg"]
