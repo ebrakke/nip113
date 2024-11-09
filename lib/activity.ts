@@ -1,93 +1,140 @@
-import { type Event } from 'nostr-tools'
-import { finalizeEvent } from 'nostr-tools/pure'
-import * as nip44 from 'nostr-tools/nip44'
-import { ActivityData } from './types'
-import cuid from 'cuid'
+import { 
+  Activity,
+  ActivityEvent,
+  PrivateActivityContent,
+  EventTemplate,
+} from './types'
+import { encrypt, decrypt } from 'nostr-tools/nip44'
 
-export class ActivityBuilder {
-  private static readonly PUBLIC_KIND = 30100
-  private static readonly PRIVATE_KIND = 30102
+/**
+ * Creates an unsigned public activity event (kind 30100)
+ */
+export function createPublicActivityEvent(activity: Activity): EventTemplate {
+  const tags = [
+    ['d', activity.recordedAt.toString()],
+    ['activity', activity.activityType],
+  ]
 
-  /**
-   * Creates a public activity event
-   */
-  static createPublicEvent(data: ActivityData, secretKey: Uint8Array): Event {
-    return this.createEvent(data, this.PUBLIC_KIND, secretKey)
+  if (activity.activityFileUrl) {
+    tags.push(['r', activity.activityFileUrl])
   }
 
-  /**
-   * Creates an encrypted private activity event
-   */
-  static createPrivateEvent(data: ActivityData, secretKey: Uint8Array): Event {
-    const event = this.createEvent(data, this.PRIVATE_KIND, secretKey)
-    
-    // For private events, encrypt all metrics as content
-    const encryptedContent = nip44.encrypt(
-      JSON.stringify({
-        distance: data.metrics.distance,
-        duration: data.metrics.duration,
-        elevation_gain: data.metrics.elevation_gain,
-        elevation_loss: data.metrics.elevation_loss,
-        average_speed: data.metrics.average_speed,
-        max_speed: data.metrics.max_speed
-      }),
-      secretKey,
+  if (activity.images?.length) {
+    activity.images.forEach(img => {
+      const imgTag = ['image', img.url]
+      if (img.width && img.height) {
+        imgTag.push(img.width.toString(), img.height.toString())
+      }
+      if (img.imeta) {
+        imgTag.push(img.imeta)
+      }
+      tags.push(imgTag)
+    })
+  }
+
+  return {
+    kind: 30100,
+    created_at: Math.floor(Date.now() / 1000),
+    tags,
+    content: JSON.stringify({
+      title: activity.title,
+      metrics: activity.metrics
+    })
+  }
+}
+
+/**
+ * Creates an unsigned private activity event (kind 30102)
+ */
+export function createPrivateActivityEvent(
+  activity: Activity, 
+  privateKey: Uint8Array
+): EventTemplate {
+  const privateContent: PrivateActivityContent = {
+    metrics: activity.metrics,
+    sensitive_tags: {
+      title: activity.title,
+      images: activity.images
+    }
+  }
+
+  if (activity.activityFileUrl) {
+    privateContent.sensitive_tags.r = activity.activityFileUrl
+  }
+
+  // Encrypt the content using NIP-44
+  const encryptedContent = encrypt(
+    JSON.stringify(privateContent),
+    privateKey
+  )
+
+  return {
+    kind: 30102,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['d', activity.recordedAt.toString()],
+      ['activity', activity.activityType],
+    ],
+    content: encryptedContent
+  }
+}
+
+/**
+ * Parses an activity event back into an Activity object
+ */
+export function parseActivityEvent(
+  event: ActivityEvent, 
+  privateKey?: Uint8Array
+): Activity {
+  let content: any
+  
+  if (event.kind === 30102) {
+    if (!privateKey) {
+      throw new Error('Private key required to decrypt private activity event')
+    }
+    // Decrypt the content for private events
+    const decryptedContent = decrypt(
+      event.content,
+      privateKey,
     )
-    event.content = encryptedContent
-    
-    return event
+    content = JSON.parse(decryptedContent)
+  } else {
+    content = JSON.parse(event.content)
+  }
+  
+  const activity: Activity = {
+    title: event.kind === 30100 ? content.title : content.sensitive_tags.title,
+    activityType: event.tags.find(t => t[0] === 'activity')?.[1] as Activity['activityType'],
+    recordedAt: parseInt(event.tags.find(t => t[0] === 'd')?.[1] || '0'),
+    metrics: event.kind === 30100 ? content.metrics : content.metrics,
   }
 
-  private static createEvent(
-    data: ActivityData,
-    kind: number,
-    secretKey: Uint8Array
-  ): Event {
-    const tags: string[][] = [
-      ['d', this.generateIdentifier()],
-      ['t', data.type],
-      ['title', data.title],
-      ['recorded_at', data.recordedAt.toString()]
-    ]
-
-    // Add metrics as tags for public events
-    if (kind === this.PUBLIC_KIND) {
-      if (data.metrics.distance) tags.push(['distance', data.metrics.distance.toString()])
-      if (data.metrics.duration) tags.push(['duration', data.metrics.duration.toString()])
-      if (data.metrics.elevation_gain) tags.push(['elevation_gain', data.metrics.elevation_gain.toString()])
-      if (data.metrics.elevation_loss) tags.push(['elevation_loss', data.metrics.elevation_loss.toString()])
-      if (data.metrics.average_speed) tags.push(['avg_speed', data.metrics.average_speed.toString()])
-      if (data.metrics.max_speed) tags.push(['max_speed', data.metrics.max_speed.toString()])
+  // Handle images
+  if (event.kind === 30100) {
+    const imageTags = event.tags.filter(t => t[0] === 'image')
+    if (imageTags.length > 0) {
+      activity.images = imageTags.map(tag => ({
+        url: tag[1],
+        ...(tag[2] ? {
+          width: parseInt(tag[2]),
+          height: parseInt(tag[3])
+        } : {}),
+        ...(tag[4] ? { imeta: tag[4] } : {})
+      }))
     }
-
-    if (data.description) {
-      tags.push(['desc', data.description])
-    }
-
-    if (data.activityFileUrl) {
-      tags.push(['r', data.activityFileUrl])
-    }
-
-    if (data.images) {
-      data.images.forEach(img => {
-        const imageTag = ['image', img.url]
-        if (img.width) imageTag.push(img.width.toString())
-        if (img.height) imageTag.push(img.height.toString())
-        tags.push(imageTag)
-      })
-    }
-
-    const eventTemplate = {
-      kind,
-      created_at: Math.floor(Date.now() / 1000),
-      tags,
-      content: data.description || '' // Use description as content for public events
-    }
-
-    return finalizeEvent(eventTemplate, secretKey)
+  } else if (event.kind === 30102) {
+    activity.images = content.sensitive_tags.images
   }
 
-  private static generateIdentifier(): string {
-    return cuid()
+  // Handle activity file URL
+  if (event.kind === 30100) {
+    const rTag = event.tags.find(t => t[0] === 'r')
+    if (rTag) {
+      activity.activityFileUrl = rTag[1]
+    }
+  } else if (event.kind === 30102) {
+    activity.activityFileUrl = content.sensitive_tags.r
   }
+
+  return activity
 } 
