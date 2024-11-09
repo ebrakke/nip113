@@ -94,8 +94,6 @@ Activity events can include photos using the `image`. Multiple photos can be att
 
 For private activities (`kind:30102`), photos should be included in the encrypted content field instead of as tags.
 
-Photos SHOULD be hosted using Blossom compliant file storage servers when possible.
-
 ### Privacy Considerations
 Activity data often contains sensitive location information. Clients SHOULD:
 - Allow users to trim/blur start/end points of routes
