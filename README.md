@@ -1,58 +1,65 @@
-# nostr-activity
+# nostr-physical-activity
 
-A simple SDK for creating and managing physical activity events on Nostr (NIP-113).
+A TypeScript library for creating and parsing physical activity events on Nostr (NIP-113).
+
+## Overview
+
+This library provides a minimal implementation for creating and parsing activity events on Nostr, following the NIP-113 specification. It supports both public (kind:30100) and private (kind:30102) activity events.
 
 ## Usage
 
-```typescript
-import { ActivityManager } from 'nostr-activity'
+### Creating Activities
 
-// Initialize
-const pool = new SimplePool()
-const activityManager = new ActivityManager(pool, privateKey)
+```typescript
+import { createPublicActivityEvent, createPrivateActivityEvent } from 'nostr-activity'
 
 // Create a public activity
-const publicActivity = await activityManager.createPublicActivity(
-  '2024-01-15-morning-run',
-  {
-    distance: 5280,
-    duration: 1800,
-    elevation_gain: 42,
-    elevation_loss: 42,
-    average_speed: 2.93,
-    max_speed: 3.5
-  },
-  {
-    title: 'Morning Park Run',
-    activityType: 'run',
-    recordedAt: 1705312800,
-    activityFileUrl: 'https://example.com/activities/run1234.gpx',
-    images: [
-      {
-        url: 'https://storage.example.com/activity1234/photo1.jpg',
-        width: 1200,
-        height: 800
-      }
-    ]
+const activity = {
+  id: '2024-01-15-morning-run',
+  title: 'Morning Park Run',
+  type: 'run',
+  recordedAt: 1705312800,
+  activityFileUrl: 'https://example.com/activities/run1234.gpx',
+  images: [
+    'https://storage.example.com/activity1234/photo1.jpg',
+    'https://storage.example.com/activity1234/photo2.jpg'
+  ],
+  metrics: {
+    distance: 5280,        // meters
+    duration: 1800,        // seconds
+    elevation_gain: 42,    // meters
+    elevation_loss: 42,    // meters
+    average_speed: 2.93,   // meters/second
+    max_speed: 3.5        // meters/second
   }
-)
+}
 
-// Publish the activity
-await activityManager.publishActivity(publicActivity)
+// Create public event
+const publicEvent = createPublicActivityEvent(activity)
 
-// Create a private activity
-const privateActivity = await activityManager.createPrivateActivity(
-  '2024-01-15-morning-run',
-  metrics,
-  options
-)
-
-// Publish private activity
-await activityManager.publishActivity(privateActivity)
-
-// Decrypt a private activity
-const decryptedActivity = await activityManager.decryptPrivateActivity(privateActivity)
+// Create private event (requires NIP-44 private key)
+const privateEvent = createPrivateActivityEvent(activity, privateKey)
 ```
+
+### Parsing Activities
+
+```typescript
+import { parseActivityEvent } from 'nostr-activity'
+
+// Parse public event
+const activity = parseActivityEvent(event)
+
+// Parse private event (requires NIP-44 private key)
+const privateActivity = parseActivityEvent(event, privateKey)
+```
+
+## Features
+
+- Create and parse both public (kind:30100) and private (kind:30102) activity events
+- NIP-44 encryption for private activities
+- Support for activity files and images
+- TypeScript types for all activity data
+- Follows NIP-113 specification
 
 ## License
 
