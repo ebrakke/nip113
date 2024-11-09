@@ -32,8 +32,8 @@ The `content` field MUST contain a stringified JSON object with basic metrics:
     ["title", "<activity title>"],
     ["recorded_at", "<unix timestamp when activity occurred>"],
     ["r", "<URL to activity file>"], // Optional
-    ["image", "<URL>", "<optional width>", "<optional height>"], // Can have multiple image tags
-    ["imeta", "<inline metadata as per NIP-92>"] // Optional, helps with image handling
+    ["image", "<URL>"], // Optional, image URL
+    ["image", "<URL>"], // Optional, image URL
   ]
 }
 ```
@@ -54,14 +54,7 @@ An encrypted version of the activity event, using NIP-44 encryption. The `conten
   "sensitive_tags": {
     "title": "<activity title>",
     "r": "<URL to activity file>",
-    "images": [
-      {
-        "url": "<URL>",
-        "width": "<optional width>",
-        "height": "<optional height>",
-        "imeta": "<optional metadata>"
-      }
-    ]
+    "images": ["<URL>", "<URL>"]
   }
 }
 ```
@@ -97,9 +90,9 @@ Activities MUST include a `t` tag with one of these types:
 Additional activity types may be added to this NIP in the future.
 
 ### Photos
-Activity events can include photos using the `image` tag as defined in NIP-23 and can optionally use the `imeta` tag from NIP-92 for richer image metadata. Multiple photos can be attached to a single activity by using multiple `image` tags.
+Activity events can include photos using the `image`. Multiple photos can be attached to a single activity by using multiple `image` tags.
 
-For private activities (`kind:30102`), photos and their metadata should be included in the encrypted content field instead of as tags.
+For private activities (`kind:30102`), photos should be included in the encrypted content field instead of as tags.
 
 Photos SHOULD be hosted using Blossom compliant file storage servers when possible.
 
@@ -130,8 +123,8 @@ Rather than trying to standardize every possible activity metric or analysis, th
     ["title", "Morning Park Run"],
     ["recorded_at", "1705312800"],
     ["r", "https://example.com/activities/run1234.gpx"],
-    ["image", "https://storage.example.com/activity1234/photo1.jpg", "1200", "800"],
-    ["image", "https://storage.example.com/activity1234/photo2.jpg", "1200", "800"]
+    ["image", "https://storage.example.com/activity1234/photo1.jpg"],
+    ["image", "https://storage.example.com/activity1234/photo2.jpg"]
   ]
 }
 ```

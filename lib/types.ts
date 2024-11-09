@@ -11,19 +11,13 @@ export type ActivityMetrics = {
 
 export type ActivityType = 'run' | 'ride' | 'hike' | 'swim' | 'walk' | 'ski' | 'workout'
 
-export type ActivityImage = {
-  url: string
-  width?: number
-  height?: number
-  imeta?: string
-}
-
 export type ActivityOptions = {
+  id: string
   title: string
-  activityType: ActivityType
+  type: ActivityType
   recordedAt: number
   activityFileUrl?: string
-  images?: ActivityImage[]
+  images?: string[]
 }
 
 // New type to represent a complete activity
@@ -36,7 +30,7 @@ export type PrivateActivityContent = {
   sensitive_tags: {
     title: string
     r?: string
-    images?: ActivityImage[]
+    images?: string[]
   }
 }
 

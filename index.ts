@@ -4,12 +4,16 @@ import {
   createPrivateActivityEvent, 
   parseActivityEvent 
 } from './lib/activity'
-import { generateSecretKey } from 'nostr-tools'
+import { finalizeEvent, generateSecretKey } from 'nostr-tools'
+import cuid from 'cuid'
+
+const sk = generateSecretKey()
 
 // Example 1: Creating and parsing a public running activity
 const runningActivity: Activity = {
+  id: cuid(),
   title: "Morning Run in Central Park",
-  activityType: "run",
+  type: "run",
   recordedAt: Date.now(),
   metrics: {
     distance: 5200,  // meters
@@ -20,33 +24,24 @@ const runningActivity: Activity = {
     elevation_loss: 50  // meters
   },
   images: [
-    {
-      url: "https://example.com/run-selfie.jpg",
-      width: 1200,
-      height: 800,
-      imeta: "Running selfie at the park entrance"
-    }
-  ],
-  activityFileUrl: "https://example.com/run-data.gpx"
+    "https://example.com/run-selfie.jpg",
+    "https://example.com/run-data.gpx"
+  ]
 }
 
 // Create a public event from the activity
 const publicEvent = createPublicActivityEvent(runningActivity)
+const signedPublicEvent = finalizeEvent(publicEvent, sk)
 console.log('Public Event:', publicEvent)
-
 // Parse the event back to an activity
-const parsedPublicActivity = parseActivityEvent({
-  ...publicEvent,
-  id: 'dummy-id',
-  pubkey: 'dummy-pubkey',
-  sig: 'dummy-sig'
-} as Event)
+const parsedPublicActivity = parseActivityEvent(signedPublicEvent)
 console.log('Parsed Public Activity:', parsedPublicActivity)
 
 // Example 2: Creating and parsing a private cycling activity
 const cyclingActivity: Activity = {
+  id: cuid(),
   title: "Evening Bike Ride",
-  activityType: "ride",
+  type: "ride",
   recordedAt: Date.now(),
   metrics: {
     distance: 15000,    // meters
@@ -57,24 +52,15 @@ const cyclingActivity: Activity = {
     elevation_loss: 245  // meters
   },
   images: [
-    {
-      url: "https://example.com/bike-sunset.jpg",
-      width: 1920,
-      height: 1080
-    }
+    "https://example.com/bike-sunset.jpg"
   ]
 }
 
 // Create a private event from the activity
-const privateKey = generateSecretKey()
-const privateEvent = createPrivateActivityEvent(cyclingActivity, privateKey)
-console.log('Private Event:', privateEvent)
+const privateEvent = createPrivateActivityEvent(cyclingActivity, sk)
+const signedPrivateEvent = finalizeEvent(privateEvent, sk)
+console.log('Private Event:', signedPrivateEvent)
 
 // Parse the private event back to an activity
-const parsedPrivateActivity = parseActivityEvent({
-  ...privateEvent,
-  id: 'dummy-id',
-  pubkey: 'dummy-pubkey',
-  sig: 'dummy-sig'
-}, privateKey)
+const parsedPrivateActivity = parseActivityEvent(signedPrivateEvent, sk)
 console.log('Parsed Private Activity:', parsedPrivateActivity)
